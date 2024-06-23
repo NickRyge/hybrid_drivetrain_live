@@ -1,0 +1,56 @@
+{
+  "policeparts_lights_green_GREAD": {
+    "name": "policeparts_lights_green_GREAD",
+    "mapTo": "policeparts_lights_green_GREAD",
+    "class": "Material",
+    "persistentId": "743e620a-c635-4924-a0a0-8e34e9e77fc6",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/police_parts/police_parts_lights_b.color.png",
+        "emissive": true,
+        "emissiveFactor": [
+          100,
+          1100,
+          200
+        ],
+        "emissiveMap": "/vehicles/common/police_parts/police_parts_lights_G.data.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/police_parts/police_parts_lights_m.data.png",
+        "normalMap": "/vehicles/common/police_parts/police_parts_lights_nm.normal.png",
+        "roughnessMap": "/vehicles/common/police_parts/police_parts_lights_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  },
+  "policeparts_lights_red_GREAD": {
+    "name": "policeparts_lights_red_GREAD",
+    "mapTo": "policeparts_lights_red_GREAD",
+    "class": "Material",
+    "persistentId": "743e620a-c635-4924-a0a0-8e34e9e77fc6",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/police_parts/police_parts_lights_b.color.png",
+        "emissive": true,
+        "emissiveFactor": [
+          1100,
+          100,
+          100
+        ],
+        "emissiveMap": "/vehicles/common/police_parts/police_parts_lights_G.data.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/police_parts/police_parts_lights_m.data.png",
+        "normalMap": "/vehicles/common/police_parts/police_parts_lights_nm.normal.png",
+        "roughnessMap": "/vehicles/common/police_parts/police_parts_lights_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "version": 1.5
+  }
+}

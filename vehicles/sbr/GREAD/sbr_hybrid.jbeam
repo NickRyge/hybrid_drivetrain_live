@@ -1,0 +1,42 @@
+{
+
+    "sbr_driveshaft_h": {
+        "information":{
+            "authors":"BeamNG",
+            "name":"Hybrid MGU driveshaft attachment",
+            "value":450,
+        },
+        "slotType" : "sbr_mod",
+        "slots": [
+            ["type", "default", "description"],
+            ["common_diff_mgu","common_hybrid_MGU","Motor-Generator Unit", {"coreSlot":true}]
+        ],
+
+        "powertrain" : [
+            ["type", "name", "inputName", "inputIndex"],
+
+            ["electricMotorTest2", "mgu", "gearbox", 1, {"defaultVirtualInertia":0.1,}],
+            ["differential", "transfercase", "mgu", 1, {"diffType":"lsd", "lsdPreload":"$lsdpreload_C", "lsdLockCoef":"$lsdlockcoef_C", "lsdRevLockCoef":"$lsdlockcoefrev_C", "diffTorqueSplit":"$difftorquesplit_C", "friction":0.65, "dynamicFriction":0.00044, "torqueLossCoef":0.0105, "uiName":"Center Differential","defaultVirtualInertia":0.1,"speedLimitCoef":0.1}],
+
+            //["splitShaft", "transfercase", "mgu", 1, {"deformGroups":["transfercase"], "splitType":"locked", "primaryOutputID":2, "lockTorque":3000, "friction":0.35, "dynamicFriction":0.00037, "torqueLossCoef": 0.012, "uiName":"Electrically Clutched Torque Splitter","defaultVirtualInertia":0.1, "defaultClutchRatio":0}],
+            //["shaft", "driveshaft", "transfercase", 1, {"deformGroup":"driveshaft", "breakTriggerBeam":"driveshaft", "uiName":"Rear Driveshaft", "electricsName":"driveshaft", "friction":0.33, "dynamicFriction":0.0037}],
+        ],
+        //"torsionReactorR": {
+        //    "torqueReactionNodes:":["e2l","e2r","e3r"],
+        //},
+        "props": [
+            ["func"      , "mesh"           , "idRef:", "idX:", "idY:", "baseRotation"        , "rotation"            , "translation"        , "min", "max", "offset", "multiplier",],
+            ["driveshaft", "vivace_driveshaft", "rdiffr", "rdiffl", "tra1",    {"x":-89.4, "y":0, "z":0}, {"x":0, "y":1, "z":0} , {"x":0, "y":0, "z":0}, -360, 360, 0, 1,{"breakGroup":"driveshaft","deformGroup":"driveshaft","optional":true}],
+        ],
+        "beams": [
+              ["id1:", "id2:"],
+              //driveshaft
+              {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":0.02, "beamShortBound":0.02},
+              {"beamSpring":0,"beamDamp":0,"beamDeform":1500,"beamStrength":3500},
+              {"beamLimitSpring":10001000,"beamLimitDamp":250},
+              ["rdiffr","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+              ["rdiffl","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+              {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        ],
+    }
+}

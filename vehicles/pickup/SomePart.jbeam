@@ -1,0 +1,36 @@
+{
+    "GREAD_blink": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"Blinkers",
+            "value":100
+        },
+        "slotType" : "pickup_mod",
+        "controller": [
+            ["fileName"],
+            ["blinkAtInterval"]
+        ],
+        "glowMap":{
+            "mod_beacon_light":       {"simpleFunction":"crashLight", "off":"policeparts_lights_blue", "on":"policeparts_lights_red_GREAD", "on_intense":"policeparts_lights_green_GREAD"},
+            "mod_beacon_glass":       {"simpleFunction":"crashLight", "off":"policeparts_glass_blue", "on":"policeparts_lights_red_GREAD", "on_intense":"policeparts_lights_green_GREAD"},
+        },
+        "flexbodies": [
+            ["mesh", "[group]:", "nonFlexMaterials"],
+            ["mod_beacon_base", ["pickup_body"], [], {"pos":{"x": 0, "y":0, "z":1.78}, "rot":{"x":0, "y":0, "z":2}, "scale":{"x":1.12, "y":1.12, "z":1.712}}],
+            ["mod_beacon_light", ["pickup_body"], [], {"pos":{"x": 0, "y":0, "z":1.78}, "rot":{"x":0, "y":0, "z":2}, "scale":{"x":1.12, "y":1.12, "z":1.512}}],
+        ],
+    },
+    "GREAD_hybrid": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"HybridCrash",
+            "value":100
+        },
+        "slotType" : "pickup_mod",
+        "controller": [
+            ["fileName"],
+            ["hybridStateLights"]
+        ],
+
+    }
+}

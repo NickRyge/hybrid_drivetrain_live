@@ -1,0 +1,11 @@
+{
+    "hybrid_test": {
+        "order": 1,
+        "cat":"vehicle",       
+        "ctx": "vlua",
+        "onDown": "print(\"pressed\")",
+        "onUp"  :"print(\"unpressed\")",
+        "title": "Test",
+        "desc": "nothing yet"
+    }
+}

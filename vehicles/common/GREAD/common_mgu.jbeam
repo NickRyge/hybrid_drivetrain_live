@@ -1,0 +1,202 @@
+{
+    "common_hybrid_MGU_194": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"MGU 194KW",
+            "value":7000
+        },
+        "slotType" : "common_diff_mgu_TQ",
+        "mgu":{
+            "torque":[
+                ["rpm", "torque"],
+                [0,     310],
+                [500,   310],
+                [1000,  310],
+                [1500,  310],
+                [2000,  310],
+                [3000,  310],
+                [4000,  310],
+                [5000,  310],
+                [6000,  310],
+                [7000,  280],
+                [8000,  245],
+                [9000,  190],
+                [10000, 160],
+                [11000, 135],
+                [12000, 100],
+                [13000, 80],
+                [14000, 65],
+                [15000, 60],
+                [16000, 55],
+            ],
+            "unSmoothed":true,
+        },
+    },
+
+
+    "common_hybrid_MGU_300": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"MGU 300KW",
+            "value":7000
+        },
+        "slotType" : "common_diff_mgu_TQ",
+        "mgu":{
+            "torque":[
+                ["rpm", "torque"],
+                [    0,   620],
+                [  500,   620],
+                [ 1000,   620],
+                [ 1500,   620],
+                [ 2000,   620],
+                [ 3000,   620],
+                [ 4000,   620],
+                [ 5000,   620],
+                [ 6000,   620],
+                [ 7000,   560],
+                [ 8000,   490],
+                [ 9000,   380],
+                [10000,   320],
+                [11000,   270],
+                [12000,   200],
+                [13000,   160],
+                [14000,   100],
+                [15000,    70],
+                [16000,    55]
+            ],
+            "unSmoothed":true,
+        },
+    },
+
+    "common_hybrid_MGU_100": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"MGU 100KW",
+            "value":7000
+        },
+        "slotType" : "common_diff_mgu_TQ",
+        "mgu":{
+            "torque":[
+                ["rpm", "torque"],
+                [    0,   186],
+                [  500,   186],
+                [ 1000,   186],
+                [ 1500,   186],
+                [ 2000,   186],
+                [ 3000,   186],
+                [ 4000,   186],
+                [ 5000,   186],
+                [ 6000,   186],
+                [ 7000,   168],
+                [ 8000,   147],
+                [ 9000,   114],
+                [10000,    96],
+                [11000,    81],
+                [12000,    60],
+                [13000,    48],
+                [14000,    65],
+                [15000,    60],
+                [16000,    55]
+            ],
+            "unSmoothed":true,
+        },
+    },
+
+    "common_hybrid_MGU_50": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"MGU 50KW",
+            "value":7000
+        },
+        "slotType" : "common_diff_mgu_TQ",
+        "mgu":{
+            "torque":[
+                ["rpm", "torque"],
+                [    0,    77],
+                [  500,    77],
+                [ 1000,    77],
+                [ 1500,    77],
+                [ 2000,    77],
+                [ 3000,    77],
+                [ 4000,    77],
+                [ 5000,    77],
+                [ 6000,    77],
+                [ 7000,    70],
+                [ 8000,    61],
+                [ 9000,    47],
+                [10000,    40],
+                [11000,    33],
+                [12000,    25],
+                [13000,    20],
+                [14000,    17],
+                [15000,    13],
+                [16000,    10]
+            ],
+        },
+    },
+
+
+    "common_hybrid_MGU": {
+        "information":{
+            "authors":"NickRyge",
+            "name":"Driveshaft MGU",
+            "value":7000
+        },
+        "slotType" : "common_diff_mgu",
+        "slots": [
+            ["type", "default", "description"],
+            ["common_diff_mgu_TQ","common_hybrid_MGU_100", "MGU power", {"coreSlot":true}]
+        ],
+        "variables": [
+            ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+            ["$evGearing", "range", ":1", "Hybrid", 2.1, 0.75, 5, "MGU gearing", "Gearing of the MGU. Higher gearing equals more torque, lower max RPM.", {"stepDis":0.01, "subCategory":"MGU"}]
+        ],
+        "controller": [
+            ["fileName"],
+            ["mguController"]
+        ],
+        "energyStorage": [
+            ["type", "name"],
+            ["electricBattery", "mainBattery"]
+        ],
+        "mainBattery": {
+            "energyType":"electricEnergy",
+            "batteryCapacity": 5,
+            "startingCapacity": 5
+        },
+        "powertrain": [
+            ["type", "name", "inputName", "inputIndex"],
+            
+        ],
+        // MGU device type. 
+        "mgu":{
+            "maxRegenPower":1500,
+            "maxRegenTorque":1500,
+            "inertia":0.10,
+            "friction":1,
+            "dynamicFriction":0.0003,
+            "electricalEfficiency":0.95,
+            //"torqueReactionNodes:":["fem1l","fem1r","fem4r"], //Not neccessary?
+            "energyStorage": "mainBattery",
+
+            //Special variables
+            "evGearRatio": "$evGearing" //represents the virtual gearing of the motor to the shaft it is attached to.
+            
+            //Throttle
+            "electricsThrottleName": "mguThrottle",
+            "electricsThrottleFactorName": "throttleFactorFront",
+            
+            //node beam interface
+            "waterDamage": {"[engineGroup]:":["front_motor_waterdamage"]},
+            "engineBlock": {"[engineGroup]:":["front_motor_block"]},
+            "breakTriggerBeam":"front_motor",
+            "uiName":"Front Motor",
+    
+            "soundConfig": "soundMGU",
+        },
+        "soundMGU": {
+            "sampleName": "ElectricMotor", //Change to something cooler
+            "mainGain": 10, //Very loud to make sure it works.
+        },
+    }
+}
