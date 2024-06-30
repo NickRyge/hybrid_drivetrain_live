@@ -1,0 +1,8 @@
+{ 
+    "updateMode": {
+        "order": 1,
+        "onDown": "UpdateHybridMode(VALUE)",
+        "title": "Change hybrid mode.",
+        "desc": "Offsets the spotlight up and down to enable use with weird camera perspectives."
+    }
+}

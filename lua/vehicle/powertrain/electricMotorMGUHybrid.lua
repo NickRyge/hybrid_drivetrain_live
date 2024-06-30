@@ -14,7 +14,6 @@ local abs = math.abs
 local floor = math.floor
 local sign = sign
 
-
 local rpmToAV = 0.104719755
 local avToRPM = 9.549296596425384
 local torqueToPower = 0.0001404345295653085
@@ -135,7 +134,7 @@ local function updateEnergyUsage(device)
 end
 
 
-local function updateTorqueTest(device, dt)
+local function updateTorqueWithInput(device, dt)
   local engineAV = device.outputAV1
   local throttleFactor = electrics.values[device.electricsThrottleFactorName] or device.throttleFactor --used by things like traction control
   local throttle = (electrics.values[device.electricsThrottleName] or 0) * throttleFactor
@@ -166,9 +165,9 @@ local function updateTorqueTest(device, dt)
   local regenTorque = -(min(max(rawRegenTorque * regenThrottle, min(rawRegenTorque, device.minWantedRegenTorque)), device.maxWantedRegenTorque) * sign(regenThrottle) * throttleFactor * motorDirection)
   device.regenThrottle = regenThrottle
   device.instantMaxRegenTorque = rawRegenTorque
-  
+
   local actualTorque = throttle > 0 and torque or regenTorque
-  
+
   local maxCurrentTorque = (torqueCurve[torqueRPM] or torqueCurve[0]) - friction - (dynamicFriction * abs(device.outputRPM) * 0.1047197177)
   local instantEngineLoad = clamp(actualTorque / (maxCurrentTorque + 1e-30), -1, 1)
   device.instantEngineLoad = instantEngineLoad
@@ -187,8 +186,65 @@ local function updateTorqueTest(device, dt)
   local frictionTorque = abs(friction * avSign + dynamicFriction * engineAV)
   --friction torque is limited for stability
   frictionTorque = min(frictionTorque, abs(engineAV) * device.inertia * 2000) * avSign
-
+  --print("Input")
   device[device.outputTorqueName] = ((device.parent[device.parentOutputTorqueName] - (device.friction * clamp(device.inputAV, -1, 1) + device.dynamicFriction * device.inputAV) * device.wearFrictionCoef * device.damageFrictionCoef) * device.gearRatio) + (actualTorque - frictionTorque)
+end
+
+
+local function updateTorqueWithoutInput(device, dt)
+  local engineAV = device.outputAV1
+  local throttleFactor = electrics.values[device.electricsThrottleFactorName] or device.throttleFactor --used by things like traction control
+  local throttle = (electrics.values[device.electricsThrottleName] or 0) * throttleFactor
+  local throttleDirection = throttle < 0 and -1 or 1
+  throttle = throttle * throttleDirection
+  throttle = clamp(-throttle * clamp(engineAV - device.tempRevLimiterAV, 0, device.tempRevLimiterMaxAVOvershoot) * device.invTempRevLimiterRange + throttle, 0, 1)
+  throttle = throttle * (device.isAffectedByIgnition and device.ignitionCoef or 1) --apply ignition
+  --smooth our actual throttle value to not have super instant torque that will just break traction
+  if (not device.unSmoothed) then
+    throttle = device.throttleSmoother:getUncapped(throttle, dt)
+  end
+  device.throttle = throttle
+
+  local motorDirection = device.motorDirection * throttleDirection
+  local torqueCurve = device.torqueCurve
+  local friction = device.friction
+  local dynamicFriction = device.dynamicFriction
+  local rpm = (engineAV * avToRPM * motorDirection) * device.syntheticGearRatio -- Do syntheticGearRatio magic
+  local torqueRPM = floor(rpm)
+
+  local torqueCoef = clamp(device.torqueCoef, 0, 1) --can be used to externally reduce the available torque, for example to limit output power
+  local torque = (torqueCurve[torqueRPM] or (torqueRPM < 0 and torqueCurve[0] or 0)) * device.outputTorqueState * torqueCoef
+  torque = torque * throttle * motorDirection * device.syntheticGearRatio -- Do more magic.
+  torque = min(torque, device.maxTorqueLimit) --limit output torque to a specified max, math.huge by default
+
+  local regenThrottle = electrics.values[device.electricsRegenThrottleName] or 0
+  local rawRegenTorque = (device.regenCurve[torqueRPM] or 0)
+  local regenTorque = -(min(max(rawRegenTorque * regenThrottle, min(rawRegenTorque, device.minWantedRegenTorque)), device.maxWantedRegenTorque) * sign(regenThrottle) * throttleFactor * motorDirection)
+  device.regenThrottle = regenThrottle
+  device.instantMaxRegenTorque = rawRegenTorque
+
+  local actualTorque = throttle > 0 and torque or regenTorque
+
+  local maxCurrentTorque = (torqueCurve[torqueRPM] or torqueCurve[0]) - friction - (dynamicFriction * abs(device.outputRPM) * 0.1047197177)
+  local instantEngineLoad = clamp(actualTorque / (maxCurrentTorque + 1e-30), -1, 1)
+  device.instantEngineLoad = instantEngineLoad
+  device.engineLoad = device.loadSmoother:getCapped(instantEngineLoad, dt)
+  
+  local dtT = dt * actualTorque
+  
+  local avSign = sign(engineAV)
+  --local grossWork = dtT * (dtT * device.halfInvEngInertia + engineAV)
+  --clutchless device has no inertia of its own now, no need for additional term
+  local grossWork = dtT * engineAV
+  device.grossWorkPerUpdate = device.grossWorkPerUpdate + grossWork
+  device.spentEnergy = device.spentEnergy + grossWork / device.electricalEfficiencyTable[floor(abs(device.engineLoad) * 100) * 0.01]
+  device.frictionLossPerUpdate = device.frictionLossPerUpdate + dt * engineAV * (friction + dynamicFriction * engineAV)
+
+  local frictionTorque = abs(friction * avSign + dynamicFriction * engineAV)
+  --friction torque is limited for stability
+  frictionTorque = min(frictionTorque, abs(engineAV) * device.inertia * 2000) * avSign
+  --print((actualTorque-frictionTorque)*torqueToPower*rpm)
+  device[device.outputTorqueName] = actualTorque - frictionTorque
 end
 
 local function updateTorque(device)
@@ -283,9 +339,14 @@ local function wheelShaftDisconnectedUpdateTorque(device, dt)
 end
 
 local function selectUpdates(device)
-  device.velocityUpdate = updateVelocity
-  device.torqueUpdate = updateTorqueTest
 
+  if device.parent ~= nil and not device.parent.isFake then
+    device.torqueUpdate = updateTorqueWithInput
+  else
+    device.torqueUpdate = updateTorqueWithoutInput
+  end
+  device.velocityUpdate = updateVelocity
+  
   if device.connectedWheel then
     device.velocityUpdate = wheelShaftUpdateVelocity
     device.torqueUpdate = wheelShaftUpdateTorque
@@ -343,8 +404,7 @@ end
 
 local function validate(device)
   if device.isPhysicallyDisconnected then
-    device.mode = "disconnected"
-    selectUpdates(device)
+    --device.mode = "disconnected"
   end
 
   if (not device.connectedWheel) and (not device.children or #device.children <= 0) then
@@ -354,14 +414,14 @@ local function validate(device)
       parentDiff = parentDiff.parent
       --print(parentDiff and parentDiff.name or "nil")
     end
-
+    
     if parentDiff and parentDiff.deviceCategories.differential and parentDiff.defaultVirtualInertia then
       --print("Found parent diff, using its default virtual inertia: "..parentDiff.defaultVirtualInertia)
       device.virtualInertia = parentDiff.defaultVirtualInertia
     end
   end
-
   
+  -- This is for when the wheel is the final destination.
   if device.connectedWheel and device.parent then
     --print(device.connectedWheel)
     --print(device.name)
@@ -370,7 +430,7 @@ local function validate(device)
       torsionReactor = torsionReactor.parent
       --print(torsionReactor and torsionReactor.name or "nil")
     end
-
+    
     if torsionReactor and torsionReactor.type == "torsionReactor" and torsionReactor.torqueReactionNodes then
       local wheel = powertrain.wheels[device.connectedWheel]
       local reactionNodes = torsionReactor.torqueReactionNodes
@@ -389,7 +449,7 @@ local function validate(device)
   end
 
   table.insert(powertrain.engineData, {maxRPM = device.maxRPM, torqueReactionNodes = device.torqueReactionNodes})
-  print("MGU created as powertrain.engineData")
+  selectUpdates(device)
   return true
 end
 
@@ -699,6 +759,7 @@ local function new(jbeamData)
     isPropulsed = true,
     throttleFactor = 1,
     throttle = 0,
+    maxKW = jbeamData.maxKW or -1,
     isDisabled = false,
     isStalled = false,
     instantEngineLoad = 0,

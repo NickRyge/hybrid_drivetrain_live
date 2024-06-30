@@ -18,6 +18,9 @@ local hybridModes = {
 local currentMode
 local modeNames
 
+local engine
+local battery
+
 --- Called whenever the player resets the car
 local function reset()
     -- clearly does nothing yet.
@@ -40,11 +43,15 @@ local function init(jbeamData)
         modeNames[v] = k
     end
 
-    mgu = powertrain.getDevice("mgu") -- Set MGU
+    mgu = powertrain.getDevice("mgu") -- Set MGU TODO: Make dynamic
+    battery = energyStorage.getStorage("mainBattery")
+    engine = powertrain.getDevice("mainEngine") -- Set ICE Engine. TODO: Make dynamic
+    
+    --dump(engine)
 
     if mgu == nil then
         log("E", "mguController.lua", "No MGU attached!")
-        M.updateGFX = _error -- Throw exception. Hack.
+        M.updateGFX = _error -- Throw exception. Hacky trash.
     end
 end
 
@@ -52,7 +59,7 @@ end
 
 --- Run every graphics tick
 local function updateGFX(dt)
-    local battery = energyStorage.getStorage("mainBattery")
+    
     --print(mgu.energyStorage)
     if currentMode == hybridModes.POWER or currentMode == hybridModes.PURE then
         local x = electrics.values.gearIndex
@@ -61,6 +68,7 @@ local function updateGFX(dt)
         
         if currentMode == hybridModes.PURE then 
             electrics.values.throttle = 0 
+            engine.cutIgnition(engine, dt)
         end
     end
 
@@ -68,7 +76,7 @@ local function updateGFX(dt)
         electrics.values["mguThrottle"] = 0
     end
 
-    print(energyStorage.getStorage((mgu.energyStorage[1])).remainingRatio)
+    print(battery.remainingRatio)
     
     electrics.values["regenThrottle"] = (electrics.values["brake"]*2)+0.5
     

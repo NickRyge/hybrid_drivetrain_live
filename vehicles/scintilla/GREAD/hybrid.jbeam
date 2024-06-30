@@ -6,7 +6,7 @@
             "name":"Hybrid MGU driveshaft attachment",
             "value":450,
         },
-        "slotType" : "scintilla_mod",
+        "slotType" : "scintilla_transfer_case",
         "slots": [
             ["type", "default", "description"],
             ["common_diff_mgu","common_hybrid_MGU","Motor-Generator Unit", {"coreSlot":true}]
@@ -15,8 +15,8 @@
         "powertrain" : [
             ["type", "name", "inputName", "inputIndex"],
 
-            ["electricMotorTest2", "mgu", "gearbox", 1, {"defaultVirtualInertia":0.1,}],
-            ["splitShaft", "transfercase", "mgu", 1, {"deformGroups":["transfercase"], "splitType":"locked", "primaryOutputID":2, "lockTorque":3000, "friction":0.35, "dynamicFriction":0.00037, "torqueLossCoef": 0.012, "uiName":"Electrically Clutched Torque Splitter","defaultVirtualInertia":0.1, "defaultClutchRatio":0}],
+            ["electricMotorMGUHybrid", "mgu", "gearbox", 1, {"defaultVirtualInertia":0.1,}],
+            ["shaft", "transfercase", "mgu", 1, {"deformGroups":["gearbox"], "outputPortOverride":[1], "friction":0.33, "dynamicFriction":0.00037,"uiName":"Rear Output Shaft"}],
             //["shaft", "driveshaft", "transfercase", 1, {"deformGroup":"driveshaft", "breakTriggerBeam":"driveshaft", "uiName":"Rear Driveshaft", "electricsName":"driveshaft", "friction":0.33, "dynamicFriction":0.0037}],
         ],
         "props": [
@@ -24,14 +24,111 @@
             ["driveshaft", "vivace_driveshaft", "rdiffr", "rdiffl", "tra1",    {"x":-89.4, "y":0, "z":0}, {"x":0, "y":1, "z":0} , {"x":0, "y":0, "z":0}, -360, 360, 0, 1,{"breakGroup":"driveshaft","deformGroup":"driveshaft","optional":true}],
         ],
         "beams": [
+            ["id1:", "id2:"],
+            //driveshaft
+            {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":0.02, "beamShortBound":0.02},
+            {"beamSpring":0,"beamDamp":0,"beamDeform":1500,"beamStrength":3500},
+            {"beamLimitSpring":10001000,"beamLimitDamp":250},
+            ["rdiffr","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+            ["rdiffl","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+            {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        ],
+    },
+
+    "scintilla_differential_F_race_h": {
+        "information":{
+            "authors":"BeamNG",
+            "name":"Race hybrid",
+            "value":1850,
+        },
+        "slotType" : "scintilla_differential_F",
+        "slots": [
+            ["type", "default", "description"],
+            ["scintilla_driveshaft_F","scintilla_driveshaft_F", "Front Drive Shaft"],
+            ["scintilla_halfshafts_F","scintilla_halfshafts_F", "Front Half Shafts"],
+            ["scintilla_finaldrive_F","scintilla_finaldrive_F_race", "Front Final Drive", {"coreSlot":true}],
+            ["common_diff_mgu","common_hybrid_MGU","Motor-Generator Unit", {"coreSlot":true}]
+        ],
+        "flexbodies": [
+             ["mesh", "[group]:", "nonFlexMaterials"],
+             ["scintilla_diff_F", ["scintilla_differential_F","scintilla_chassis"]],
+        ],
+        "variables": [
+            ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+            ["$lsdpreload_F", "range", "N/m", "Differentials", 80, 0, 500, "Pre-load Torque", "Initial locking torque between left and right wheels", {"subCategory":"Front"}]
+            ["$lsdlockcoef_F", "range", "", "Differentials", 0.125, 0, 0.5, "Power Lock Rate", "Additional locking torque proportional to engine torque", {"minDis":0, "maxDis":100, "subCategory":"Front"}],
+            ["$lsdlockcoefrev_F", "range", "", "Differentials", 0, 0, 0.5, "Coast Lock Rate", "Additional locking torque proportional to engine braking", {"minDis":0, "maxDis":100, "subCategory":"Front"}],
+        ],
+        "powertrain" : [
+            ["type", "name", "inputName", "inputIndex"],
+            ["electricMotorMGUHybrid", "mgu", "dummy", 0, {"defaultVirtualInertia":0.1,}], 
+            ["differential", "differential_F", "mgu", 1, {"deformGroups":["differential_F"], "diffType":"lsd", "lsdPreload":"$lsdpreload_F", "lsdLockCoef":"$lsdlockcoef_F", "lsdRevLockCoef":"$lsdlockcoefrev_F", "uiName":"Front Differential","defaultVirtualInertia":0.25}],
+        ],
+        "differential_F": {
+            "friction": 4.13,
+            "dynamicFriction": 0.00195,
+            "torqueLossCoef": 0.030,
+        },
+        "nodes": [
+             ["id", "posX", "posY", "posZ"],
+             {"selfCollision":false},
+             {"collision":true},
+             {"frictionCoef":0.5},
+             {"nodeMaterial":"|NM_METAL"},
+
+             //front differential
+             {"nodeWeight":4.0},
+             {"group":"scintilla_differential_F"},
+             ["fdiff1r",-0.087,-1.336,0.275],
+             ["fdiff1l",0.087,-1.336,0.275],
+             ["fdiff2",0.0,-0.696,0.146],
+             {"group":""},
+        ],
+        "beams": [
               ["id1:", "id2:"],
-              //driveshaft
-              {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":0.02, "beamShortBound":0.02},
-              {"beamSpring":0,"beamDamp":0,"beamDeform":1500,"beamStrength":3500},
-              {"beamLimitSpring":10001000,"beamLimitDamp":250},
-              ["rdiffr","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
-              ["rdiffl","tra1", {"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+              {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+
+              //front differential
+              {"beamSpring":2501000,"beamDamp":150},
+              {"beamDeform":40000,"beamStrength":"FLT_MAX"},
+              {"deformLimitExpansion":1.2},
+              {"deformGroup":"differential_R", "deformationTriggerRatio":0.001}
+              ["fdiff1r", "fdiff1l"],
+              ["fdiff1l", "fdiff2"],
+              ["fdiff2", "fdiff1r"],
+              {"deformGroup":""}
+
+              //attach
+              {"beamSpring":2501000,"beamDamp":150},
+              {"beamDeform":18000,"beamStrength":"FLT_MAX"},
+              ["fdiff1r", "fx2r"],
+              ["fdiff1r", "fx1r"],
+              ["fdiff1r", "fx4r"],
+              ["fdiff1r", "fx3r"],
+
+              ["fdiff1l", "fx2l"],
+              ["fdiff1l", "fx1l"],
+              ["fdiff1l", "fx4l"],
+              ["fdiff1l", "fx3l"],
+
+              {"deformLimitExpansion":""},
+              ["fdiff1r", "fx2l"],
+              ["fdiff1r", "fx1l"],
+              ["fdiff1r", "fx4l"],
+              ["fdiff1r", "fx3l"],
+
+              ["fdiff1l", "fx2r"],
+              ["fdiff1l", "fx1r"],
+              ["fdiff1l", "fx4r"],
+              ["fdiff1l", "fx3r"],
+
+              ["fdiff2", "f2r"],
+              ["fdiff2", "f2l"],
+              ["fdiff2", "f7r"],
+              ["fdiff2", "f7l"],
+              ["fdiff2", "fx2l"],
+              ["fdiff2", "fx2r"],
               {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
         ],
-    }
+    },
 }
